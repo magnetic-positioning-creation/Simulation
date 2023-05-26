@@ -1,6 +1,6 @@
 # 别动这文件，谁动我跟谁急
 # 驱动和采样系统
-# 死循环
+# 响应式触发
 import threading
 import time
 import serial
@@ -42,9 +42,16 @@ def send_to_emd(message, com_emd):
         com_emd.write(b'Stable_1st\r\n')
     if 'FinishRead' in message:
         time.sleep(1)
-        com_emd.write(b'Stable_1st\r\n')
+        # com_emd.write(b'Stable_1st\r\n')
+        com_emd.write(b'MagneticEnd\r\n')
     if message == 'MagneticEndFinish\r\n':
         print('-' * 100)
+
+
+def interaction(com):
+    while True:
+        line = input('>>> ').strip() + '\r\n'
+        com.write(line.encode('GBK'))
 
 
 def main():
@@ -60,14 +67,16 @@ def main():
 
         emd_r = threading.Thread(target=emd_rxd, args=(emd, sen,))
         sen_r = threading.Thread(target=sen_rxd, args=(sen, emd,))
-
-        emd.write(b'MagneticBegin\r\n')
+        robot = threading.Thread(target=interaction, args=(emd,))
+        # emd.write(b'MagneticBegin\r\n')
 
         emd_r.start()
         sen_r.start()
+        robot.start()
 
         emd_r.join()
         sen_r.join()
+        robot.join()
 
     except Exception as e:
         print('[error]', e)
