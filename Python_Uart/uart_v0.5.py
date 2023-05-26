@@ -18,18 +18,20 @@ try:
     time.sleep(0.1)
     # emd.write(b'MagneticBegin\r\n')
     robot.write(b'robotbegin')
-    time.sleep(0.1)
 
     # 启动
     n = 0
-    while True:
+    while n < 10:
         while True:
             time.sleep(0.001)
             if robot.in_waiting:
                 message = robot.read_all()
                 print(message)
-                if message == b'robotdone':
+                if message == b'robotbegin':
+                    print(1)
                     break
+
+        emd.write(b'MagneticBegin\r\n')
 
         while True:
             time.sleep(0.001)
