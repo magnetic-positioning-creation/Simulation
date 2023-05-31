@@ -11,16 +11,17 @@ start = time.time()
 Save_File_Path = 'D:/User/509/dataset/dataset_20230527_1.txt'
 
 
-def emd_rxd(com_emd, com_sen, com_robot):
+
+def emd_rxd(com_emd, com_sen, com_robot, send_counter):
     while True:
         time.sleep(0.001)
         if com_emd.in_waiting:
             message = com_emd.readline().decode('gbk')
             print(message)
-            send_to_sen(message, com_sen, com_robot)
+            send_to_sen(message, com_sen, com_robot, send_counter)
 
 
-def send_to_sen(message, com_sen, com_robot):
+def send_to_sen(message, com_sen, com_robot, send_counter):
     if message == 'Stable_1st_Finish\r\n':
         com_sen.write(b'Read_1st\r\n')
     if message == 'Stable_2nd_Finish\r\n':
@@ -29,19 +30,20 @@ def send_to_sen(message, com_sen, com_robot):
         com_sen.write(b'Read_3rd\r\n')
     if message == 'MagneticEndFinish\r\n':
         com_robot.write(b'robotbegin')
+        send_counter = send_counter + 1
         print('-' * 100)
 
 
-def sen_rxd(com_sen, com_emd):
+def sen_rxd(com_sen, com_emd, send_counter, receive_counter):
     while True:
         time.sleep(0.001)
         if com_sen.in_waiting:
             message = com_sen.readline().decode('gbk')
             print(message)
-            send_to_emd(message, com_emd)
+            send_to_emd(message, com_emd, send_counter, receive_counter)
 
 
-def send_to_emd(message, com_emd):
+def send_to_emd(message, com_emd, send_counter, receive_counter):
     if message == 'Read_1st_Finish\r\n':
         com_emd.write(b'Stable_2nd\r\n')
     if message == 'Read_2nd_Finish\r\n':
@@ -52,8 +54,9 @@ def send_to_emd(message, com_emd):
         with open(file=Save_File_Path, mode='a') as f:
             f.write(message)
         end = time.time()
+        receive_counter = receive_counter + 1
+        print('Send_Counter:', send_counter, 'Receive_Counter:',  receive_counter, '\n')
         print('Time:', round(end-start, 3), 'secs\r\n')
-        print('-' * 100)
         time.sleep(1)
         com_emd.write(b'MagneticEnd\r\n')
 
@@ -79,6 +82,9 @@ def robot_send_to_emd(message, com_emd):
 
 
 def main():
+    # counter
+    send_counter = 1
+    receive_counter = 0
     try:
         # 通讯串口配置
         port_name_sen = "com4"      # 传感器
@@ -92,9 +98,9 @@ def main():
         print(robot)
         print('-' * 160)
 
-        emd_r = threading.Thread(target=emd_rxd, args=(emd, sen, robot))
-        sen_r = threading.Thread(target=sen_rxd, args=(sen, emd,))
-        robot_r = threading.Thread(target=robot_rx, args=(robot, emd))
+        emd_r = threading.Thread(target=emd_rxd, args=(emd, sen, robot, send_counter,))
+        sen_r = threading.Thread(target=sen_rxd, args=(sen, emd, send_counter, receive_counter,))
+        robot_r = threading.Thread(target=robot_rx, args=(robot, emd, ))
 
         # 日志记录
         with open(file=Save_File_Path, mode='a') as f:
