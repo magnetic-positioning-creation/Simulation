@@ -57,8 +57,8 @@ def interaction(com):
 def main():
     try:
         # 通讯串口配置
-        port_name_sen = "com7"  # 传感器
-        port_name_emd = "com4"  # 驱动
+        port_name_sen = "com4"  # 传感器
+        port_name_emd = "com7"  # 驱动
         sen = serial.Serial(port=port_name_sen, baudrate=115200, timeout=0.01, parity=serial.PARITY_NONE, bytesize=8)
         emd = serial.Serial(port=port_name_emd, baudrate=115200, timeout=0.01, parity=serial.PARITY_NONE, bytesize=8)
         print(emd)

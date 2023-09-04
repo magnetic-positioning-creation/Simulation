@@ -1,3 +1,5 @@
+"""磁场分布表数据采集多进程通讯中枢脚本文件"""
+"""参与设备：磁场驱动、采样、机械臂"""
 # 别动这文件，谁动我跟谁急
 # 驱动和采样系统
 # 响应式触发
@@ -8,9 +10,9 @@ import datetime
 
 now = datetime.datetime.now()
 start = time.time()
-Save_File_Path = 'D:/User/509/dataset/dataset_20230527_1.txt'
+Save_File_Path = 'D:/User/test_6.txt'
 
-
+robotdone_counter = 0
 
 def emd_rxd(com_emd, com_sen, com_robot, send_counter):
     while True:
@@ -29,7 +31,7 @@ def send_to_sen(message, com_sen, com_robot, send_counter):
     if message == 'Stable_3rd_Finish\r\n':
         com_sen.write(b'Read_3rd\r\n')
     if message == 'MagneticEndFinish\r\n':
-        com_robot.write(b'robotbegin')
+        com_robot.write(b'robotbegin\r\n')
         send_counter = send_counter + 1
         print('-' * 100)
 
@@ -52,6 +54,8 @@ def send_to_emd(message, com_emd, send_counter, receive_counter):
         com_emd.write(b'Stable_1st\r\n')
     if 'FinishRead' in message:
         with open(file=Save_File_Path, mode='a') as f:
+            f.write(str(robotdone_counter))
+            f.write('&')
             f.write(message)
         end = time.time()
         receive_counter = receive_counter + 1
@@ -77,7 +81,10 @@ def robot_rx(com_robot, com_emd):
 
 
 def robot_send_to_emd(message, com_emd):
-    if message == b'robotdone\n':
+    if message == b'robotdone\r\n':
+        global robotdone_counter
+        robotdone_counter += 1
+        print(robotdone_counter)
         com_emd.write(b'MagneticBegin\r\n')
 
 
@@ -87,9 +94,9 @@ def main():
     receive_counter = 0
     try:
         # 通讯串口配置
-        port_name_sen = "com4"      # 传感器
-        port_name_emd = "com7"      # 驱动
-        port_name_robot = "com3"    # 机械臂
+        port_name_sen = "com6"      # 传感器
+        port_name_emd = "com5"      # 驱动
+        port_name_robot = "com8"    # 机械臂
         sen = serial.Serial(port=port_name_sen, baudrate=115200, timeout=0.01, parity=serial.PARITY_NONE, bytesize=8)
         emd = serial.Serial(port=port_name_emd, baudrate=115200, timeout=0.01, parity=serial.PARITY_NONE, bytesize=8)
         robot = serial.Serial(port=port_name_robot, baudrate=115200, timeout=0.01, parity=serial.PARITY_NONE, bytesize=8)
@@ -106,7 +113,7 @@ def main():
         with open(file=Save_File_Path, mode='a') as f:
             f.write(str(now))
         # 启动
-        robot.write(b'robotbegin\n')
+        robot.write(b'robotbegin\r\n')
 
         emd_r.start()
         sen_r.start()
