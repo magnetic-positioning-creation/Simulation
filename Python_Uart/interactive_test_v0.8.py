@@ -1,5 +1,4 @@
-"""磁场分布表数据采集多进程通讯中枢脚本文件"""
-"""参与设备：磁场驱动、采样、机械臂"""
+"""对单个电磁铁进行采样"""
 # 别动这文件，谁动我跟谁急
 # 驱动和采样系统
 # 响应式触发
@@ -16,6 +15,14 @@ robotdone_counter = 0
 
 
 def emd_rxd(com_emd, com_sen, com_robot, send_counter):
+    """
+    电磁场驱动接收端
+    :param com_emd:电磁场驱动设备串口端口号-用于接收
+    :param com_sen:采样设备串口端口号-用于发送
+    :param com_robot:机械臂设备窗口端口号-用于发送
+    :param send_counter:用于周期计数
+    :return:none
+    """
     while True:
         time.sleep(0.001)
         if com_emd.in_waiting:
@@ -25,12 +32,13 @@ def emd_rxd(com_emd, com_sen, com_robot, send_counter):
 
 
 def send_to_sen(message, com_sen, com_robot, send_counter):
+    # TODO：对于不同电磁铁测试的时候不需要直接改变电路，就无需改变代码，避免了较为繁琐的烧录过程
     if message == 'Stable_1st_Finish\r\n':
         com_sen.write(b'Read_1st\r\n')
-    if message == 'Stable_2nd_Finish\r\n':
-        com_sen.write(b'Read_2nd\r\n')
-    if message == 'Stable_3rd_Finish\r\n':
-        com_sen.write(b'Read_3rd\r\n')
+    # if message == 'Stable_2nd_Finish\r\n':
+    #     com_sen.write(b'Read_2nd\r\n')
+    # if message == 'Stable_3rd_Finish\r\n':
+    #     com_sen.write(b'Read_3rd\r\n')
     if message == 'MagneticEndFinish\r\n':
         com_robot.write(b'robotbegin\r\n')
         send_counter = send_counter + 1
@@ -47,12 +55,12 @@ def sen_rxd(com_sen, com_emd, send_counter, receive_counter):
 
 
 def send_to_emd(message, com_emd, send_counter, receive_counter):
-    if message == 'Read_1st_Finish\r\n':
-        com_emd.write(b'Stable_2nd\r\n')
-    if message == 'Read_2nd_Finish\r\n':
-        com_emd.write(b'Stable_3rd\r\n')
-    if message == 'Read_3rd_Finish\r\n':
-        com_emd.write(b'Stable_1st\r\n')
+    # if message == 'Read_1st_Finish\r\n':
+    #     com_emd.write(b'Stable_2nd\r\n')
+    # if message == 'Read_2nd_Finish\r\n':
+    #     com_emd.write(b'Stable_3rd\r\n')
+    # if message == 'Read_3rd_Finish\r\n':
+    #     com_emd.write(b'Stable_1st\r\n')
     if 'FinishRead' in message:
         with open(file=Save_File_Path, mode='a') as f:
             f.write(str(robotdone_counter))
