@@ -9,7 +9,7 @@ import datetime
 
 now = datetime.datetime.now()
 start = time.time()
-Save_File_Path = 'D:/User/test_2.txt'
+Save_File_Path = 'D:/User/test_3_2023.9.22+.txt'
 
 robotdone_counter = 0
 
@@ -55,6 +55,8 @@ def sen_rxd(com_sen, com_emd, send_counter, receive_counter):
 
 
 def send_to_emd(message, com_emd, send_counter, receive_counter):
+    if message == 'Read_1st_Finish\r\n':
+        com_emd.write(b'Stable_1st\r\n')
     # if message == 'Read_1st_Finish\r\n':
     #     com_emd.write(b'Stable_2nd\r\n')
     # if message == 'Read_2nd_Finish\r\n':

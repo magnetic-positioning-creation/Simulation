@@ -10,7 +10,7 @@ import datetime
 
 now = datetime.datetime.now()
 start = time.time()
-Save_File_Path = 'D:/User/test_2.txt'
+Save_File_Path = 'D:/User/test_all_2023.9.22.txt'
 
 robotdone_counter = 0
 
